@@ -1,0 +1,55 @@
+@baseUrl = http://localhost:3000
+@password = TramitesTest2026!
+@authToken = {{login.response.body.$.accessToken}}
+@procedureId = {{createProcedure.response.body.$.id}}
+
+### Registrar un usuario nuevo
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "viajero.{{$guid}}@example.com",
+  "password": "{{password}}",
+  "preferredLanguage": "es"
+}
+
+### Iniciar sesión con el usuario registrado
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{register.response.body.$.email}}",
+  "password": "{{password}}"
+}
+
+### Obtener los trámites del usuario autenticado
+GET {{baseUrl}}/user/procedures
+Authorization: Bearer {{authToken}}
+
+### Crear un trámite
+# @name createProcedure
+POST {{baseUrl}}/user/procedures
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "procedureCode": "Renovación de Residencia",
+  "region": "catalunya",
+  "officialUrl": "https://sede.example.es/cita",
+  "appointmentDate": "2026-12-15T10:00:00.000Z",
+  "notes": "Documentación preparada"
+}
+
+### Actualizar el estado del trámite creado
+PATCH {{baseUrl}}/user/procedures/{{procedureId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "in_progress",
+  "description": "Documentación en revisión",
+  "region": "madrid",
+  "officialUrl": "https://sede.example.es/renovacion"
+}

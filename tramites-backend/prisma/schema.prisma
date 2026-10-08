@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String          @id @default(uuid()) @db.Uuid
+  email        String          @unique @db.VarChar(320)
+  passwordHash String
+  role         UserRole        @default(USER)
+  createdAt    DateTime        @default(now())
+  procedures   UserProcedure[]
+  profile      UserProfile?
+}
+
+model UserProfile {
+  id                String @id @default(uuid()) @db.Uuid
+  userId            String @unique @db.Uuid
+  preferredLanguage String @default("zh") @db.VarChar(10)
+  encryptedFullName String
+  encryptedPhone    String
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserProcedure {
+  id              String          @id @default(uuid()) @db.Uuid
+  userId          String          @db.Uuid
+  procedureCode   String          @db.VarChar(100)
+  status          ProcedureStatus @default(pending)
+  createdAt       DateTime        @default(now())
+  appointmentDate DateTime?
+  notes           String?
+  description     String?
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ProcedureStatus {
+  pending
+  in_progress
+  completed
+  in_review
+  approved
+  rejected
+  cancelled
+}
