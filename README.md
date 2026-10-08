@@ -32,7 +32,7 @@
 
 ## 📂 Estructura del Proyecto
 
-
+```
 ├── tramites-backend/               # API REST construida con NestJS
 │   ├── prisma/
 │   │   └── schema.prisma           # Modelos de BD (User, Procedure)
@@ -55,7 +55,7 @@
     ├── middleware.ts               # Detección automática de idioma
     ├── .env.local.example
     └── package.json
-
+```
 ---
 
 ## 🛠️ Stack Tecnológico
