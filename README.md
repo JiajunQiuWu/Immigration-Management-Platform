@@ -99,7 +99,7 @@ npx prisma migrate dev --name init_resiflow
 # Iniciar servidor en modo desarrollo (Puerto 3000)
 npm run start:dev
 
-cd ../tramites-frontend
+cd ./tramites-frontend
 
 # Instalar dependencias
 npm install
