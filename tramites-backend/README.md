@@ -1,114 +1,222 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Sistema de Gestión de Trámites — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST del sistema de gestión de trámites. Está construida con NestJS y
+TypeScript, utiliza PostgreSQL para almacenar la información y Prisma como ORM.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Contenido
 
-## Description
+- [Funcionalidades](#funcionalidades)
+- [Tecnologías](#tecnologías)
+- [Requisitos](#requisitos)
+- [Configuración e instalación](#configuración-e-instalación)
+- [Variables de entorno](#variables-de-entorno)
+- [Base de datos](#base-de-datos)
+- [Ejecución](#ejecución)
+- [Endpoints](#endpoints)
+- [Pruebas y calidad](#pruebas-y-calidad)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Consideraciones de seguridad](#consideraciones-de-seguridad)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Funcionalidades
 
-## Project setup
+- Registro e inicio de sesión con contraseñas cifradas mediante bcrypt.
+- Emisión y validación de tokens de acceso JWT.
+- Gestión de trámites asociados al usuario autenticado.
+- Validación y transformación de los datos recibidos por la API.
+- Persistencia de usuarios, perfiles y trámites en PostgreSQL.
+- Instrumentación opcional con NestJS Observe.
 
-```bash
-$ npm install
-```
+## Tecnologías
 
-## Compile and run the project
+- **NestJS 12** y **TypeScript**
+- **PostgreSQL**
+- **Prisma ORM** con el adaptador `pg`
+- **Passport** y **JWT** para la autenticación
+- **bcrypt** para el hash de contraseñas
+- **Vitest** para las pruebas
 
-```bash
-# development
-$ npm run start
+## Requisitos
 
-# watch mode
-$ npm run start:dev
+- Node.js y npm.
+- Una instancia de PostgreSQL accesible desde el backend.
 
-# production mode
-$ npm run start:prod
-```
+## Configuración e instalación
 
-## Run tests
+Desde esta carpeta (`tramites-backend`), instala las dependencias:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
+Crea un archivo `.env` en la raíz del backend y define, como mínimo, las
+variables `DATABASE_URL` y `JWT_SECRET` (consulta la sección siguiente).
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Variables de entorno
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Variable | Obligatoria | Descripción |
+| --- | --- | --- |
+| `DATABASE_URL` | Sí | Cadena de conexión a PostgreSQL que utiliza Prisma. |
+| `JWT_SECRET` | Sí | Clave privada utilizada para firmar y verificar los JWT. |
+| `PORT` | No | Puerto HTTP de la API. Por defecto, `3000`. |
+| `OBSERVE_APP_KEY` | No | Clave de NestJS Observe. Si no se configura, la instrumentación no se activa. |
+| `OBSERVE_APP_SECRET` | No | Secreto de NestJS Observe; se configura junto con la clave anterior. |
+
+Ejemplo de `.env` para desarrollo:
+
+```dotenv
+DATABASE_URL="postgresql://USUARIO:CONTRASENA@localhost:5432/tramites?schema=public"
+JWT_SECRET="sustituye-este-valor-por-una-clave-segura"
+PORT=3000
+```
+
+Adapta la cadena de conexión a tu instalación de PostgreSQL. No compartas ni
+subas el archivo `.env` al repositorio.
+
+## Base de datos
+
+El esquema de Prisma está en `prisma/schema.prisma` y las migraciones en
+`prisma/migrations/`. Con PostgreSQL en ejecución y `DATABASE_URL` configurada,
+aplica las migraciones existentes:
+
+> **Importante:** actualmente `region` y `officialUrl` se utilizan en el módulo
+> de trámites y aparecen en el cliente Prisma generado, pero no están definidos
+> en `prisma/schema.prisma` ni en la migración SQL existente. Sincroniza el
+> esquema y las migraciones antes de generar de nuevo el cliente o preparar una
+> base de datos desde cero; de lo contrario, las operaciones que usan esos
+> campos pueden fallar.
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma migrate deploy
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Para un entorno local de desarrollo también puedes utilizar:
 
-## Observability
+```bash
+npx prisma migrate dev
+```
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+Para generar el cliente de Prisma después de modificar el esquema:
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+```bash
+npx prisma generate
+```
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+El proyecto incluye datos de demostración. Para cargarlos en una base local:
 
-## Resources
+```bash
+npm run db:seed
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+El seed crea un administrador, un usuario y trámites de ejemplo. Las
+credenciales de demostración son:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+| Cuenta | Correo | Contraseña |
+| --- | --- | --- |
+| Administrador | `admin@tramites.local` | `AdminDemo2026!` |
+| Usuario | `usuario@tramites.local` | `UsuarioDemo2026!` |
 
-## Support
+**Utiliza el seed solo en desarrollo o pruebas.** Restablece las contraseñas de
+demostración al ejecutar el seed y no son apropiadas para un entorno real.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Ejecución
 
-## Stay in touch
+Modo desarrollo:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+npm run start:dev
+```
 
-## License
+Otros modos disponibles:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```bash
+# Inicio normal
+npm run start
+
+# Compilar para producción
+npm run build
+
+# Iniciar la versión compilada
+npm run start:prod
+```
+
+La API escucha en el puerto `3000` de forma predeterminada, o en el valor
+definido en `PORT`.
+
+## Endpoints
+
+Las rutas de trámites requieren un token JWT en la cabecera
+`Authorization: Bearer <token>`.
+
+| Método | Ruta | Autenticación | Descripción |
+| --- | --- | --- | --- |
+| `GET` | `/` | No | Ruta básica que devuelve un mensaje de bienvenida. |
+| `POST` | `/auth/register` | No | Registra una cuenta. La contraseña debe tener al menos 12 caracteres. |
+| `POST` | `/auth/login` | No | Inicia sesión y devuelve un token de acceso. |
+| `GET` | `/user/procedures` | Sí | Lista los trámites del usuario autenticado. |
+| `POST` | `/user/procedures` | Sí | Crea un trámite para el usuario autenticado. |
+| `PATCH` | `/user/procedures/:id` | Sí | Actualiza un trámite propio. |
+| `DELETE` | `/user/procedures/:id` | Sí | Elimina un trámite propio. |
+
+Ejemplo de registro:
+
+```json
+{
+  "email": "persona@example.com",
+  "password": "una-contrasena-segura",
+  "preferredLanguage": "es"
+}
+```
+
+Ejemplo de inicio de sesión:
+
+```json
+{
+  "email": "persona@example.com",
+  "password": "una-contrasena-segura"
+}
+```
+
+La respuesta de inicio de sesión incluye `accessToken`. Envíalo en la cabecera
+`Authorization` para acceder a las rutas protegidas.
+
+## Pruebas y calidad
+
+```bash
+# Pruebas unitarias
+npm run test
+
+# Pruebas end-to-end
+npm run test:e2e
+
+# Cobertura de pruebas
+npm run test:cov
+
+# Análisis estático
+npm run lint
+```
+
+## Estructura del proyecto
+
+```text
+src/
+├── auth/             # Registro, inicio de sesión y estrategia JWT
+├── prisma/           # Servicio y módulo de acceso a datos
+├── user-procedures/  # Endpoints y lógica de gestión de trámites
+├── generated/prisma/ # Cliente generado por Prisma
+├── app.module.ts     # Módulo raíz y módulos de la aplicación
+└── main.ts           # Inicio de la aplicación y configuración global
+prisma/
+├── migrations/       # Migraciones de base de datos
+├── schema.prisma     # Modelos y enums de Prisma
+└── seed.ts           # Datos de demostración
+test/                 # Pruebas end-to-end
+```
+
+## Consideraciones de seguridad
+
+- Usa un valor fuerte, privado y diferente para `JWT_SECRET` en cada entorno.
+- Mantén las credenciales de la base de datos y de Observe fuera del repositorio.
+- No uses las cuentas de demostración ni sus contraseñas en producción.
+- Antes de desplegar, revisa la configuración de CORS y limita los orígenes a los
+  dominios que necesite el cliente.
+  
